@@ -138,7 +138,7 @@ class ReplDriver(settings: Array[String],
    *  observable outside of the CLI, for this reason, most helper methods are
    *  `protected final` to facilitate testing.
    */
-  final def runUntilQuit(using initialState: State = initialState)(): State = {
+  def runUntilQuit(using initialState: State = initialState)(): State = {
     val terminal = new JLineTerminal
 
     out.println(
@@ -176,7 +176,7 @@ class ReplDriver(settings: Array[String],
     interpret(ParseResult.complete(input))
   }
 
-  private def runBody(body: => State): State = rendering.classLoader()(using rootCtx).asContext(withRedirectedOutput(body))
+  protected def runBody(body: => State): State = rendering.classLoader()(using rootCtx).asContext(withRedirectedOutput(body))
 
   // TODO: i5069
   final def bind(name: String, value: Any)(using state: State): State = state
@@ -242,7 +242,7 @@ class ReplDriver(settings: Array[String],
         .getOrElse(Nil)
   end completions
 
-  private def interpret(res: ParseResult)(using state: State): State = {
+  protected def interpret(res: ParseResult)(using state: State): State = {
     res match {
       case parsed: Parsed if parsed.trees.nonEmpty =>
         compile(parsed, state)
