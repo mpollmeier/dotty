@@ -26,12 +26,11 @@ import dotc.reporting.Diagnostic
 private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
   import Rendering._
 
-  private val MaxStringElements: Int = 1000  // no need to mkString billions of elements
   var myClassLoader: AbstractFileClassLoader = _
   var myReplStringOf: Object => String = _
 
   /** Class loader used to load compiled code */
-  private[repl] def classLoader()(using Context) =
+  private[repl] def classLoader()(using ctx: Context) =
     if (myClassLoader != null && myClassLoader.root == ctx.settings.outputDir.value) myClassLoader
     else {
       val parent = Option(myClassLoader).orElse(parentClassLoader).getOrElse {
@@ -47,6 +46,7 @@ private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
       }
 
       myClassLoader = new AbstractFileClassLoader(ctx.settings.outputDir.value, parent)
+      val maxPrintElements = ctx.settings.VreplMaxPrintElements.valueIn(ctx.settingsState)
       myReplStringOf = {
         // We need to use the ScalaRunTime class coming from the scala-library
         // on the user classpath, and not the one available in the current
@@ -59,12 +59,12 @@ private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
           val meth = scalaRuntime.getMethod(renderer, classOf[Object], classOf[Int], classOf[Boolean])
           val truly = java.lang.Boolean.TRUE
 
-          (value: Object) => meth.invoke(null, value, Integer.valueOf(MaxStringElements), truly).asInstanceOf[String]
+          (value: Object) => meth.invoke(null, value, Integer.valueOf(maxPrintElements), truly).asInstanceOf[String]
         } catch {
           case _: NoSuchMethodException =>
             val meth = scalaRuntime.getMethod(renderer, classOf[Object], classOf[Int])
 
-            (value: Object) => meth.invoke(null, value, Integer.valueOf(MaxStringElements)).asInstanceOf[String]
+            (value: Object) => meth.invoke(null, value, Integer.valueOf(maxPrintElements)).asInstanceOf[String]
         }
       }
       myClassLoader
@@ -76,11 +76,12 @@ private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
    * then this bug will surface, so perhaps better not?
    * https://github.com/scala/bug/issues/12337
    */
-  private[repl] def truncate(str: String): String = {
+  private[repl] def truncate(str: String)(using ctx: Context): String = {
+    val maxPrintElements = ctx.settings.VreplMaxPrintElements.valueIn(ctx.settingsState)
     val showTruncated = " ... large output truncated, print value to show all"
     val ncp = str.codePointCount(0, str.length) // to not cut inside code point
-    if ncp <= MaxStringElements then str
-    else str.substring(0, str.offsetByCodePoints(0, MaxStringElements - 1)) + showTruncated
+    if ncp <= maxPrintElements then str
+    else str.substring(0, str.offsetByCodePoints(0, maxPrintElements - 1)) + showTruncated
   }
 
   /** Return a String representation of a value we got from `classLoader()`. */

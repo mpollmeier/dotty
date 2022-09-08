@@ -140,6 +140,8 @@ private sealed trait VerboseSettings:
   val Xprint: Setting[List[String]] = PhasesSetting("-Vprint", "Print out program after", aliases = List("-Xprint"))
   val XshowPhases: Setting[Boolean] = BooleanSetting("-Vphases", "List compiler phases.", aliases = List("-Xshow-phases"))
 
+  val VreplMaxPrintElements: Setting[Int] = IntSetting("-Vrepl-max-print-elements", "Number of elements to be printed before output is truncated.", 1000)
+
 /** -W "Warnings" settings
  */
 private sealed trait WarningSettings:
