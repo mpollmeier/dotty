@@ -29,11 +29,10 @@ private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None):
   import Rendering._
 
   private val MaxStringElements: Int = 1000  // no need to mkString billions of elements
-
-  private var myClassLoader: AbstractFileClassLoader = _
+  var myClassLoader: AbstractFileClassLoader = _
 
   /** (value, maxElements) => String */
-  private var myReplStringOf: (Object, Int) => String = _
+  var myReplStringOf: (Object, Int) => String = _
 
   /** info to add if output got truncated */
   private val infoOutputGotTruncated = " ... large output truncated, print value to show all"
