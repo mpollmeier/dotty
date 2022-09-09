@@ -24,15 +24,11 @@ import dotc.reporting.Diagnostic
  *       `Rendering` is no longer valid.
  */
 private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
-
   import Rendering._
 
   private val MaxStringElements: Int = 1000  // no need to mkString billions of elements
-
-  private var myClassLoader: AbstractFileClassLoader = _
-
-  private var myReplStringOf: Object => String = _
-
+  var myClassLoader: AbstractFileClassLoader = _
+  var myReplStringOf: Object => String = _
 
   /** Class loader used to load compiled code */
   private[repl] def classLoader()(using Context) =
