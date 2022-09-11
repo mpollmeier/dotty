@@ -780,7 +780,7 @@ object Build {
   def dottyCompilerSettings(implicit mode: Mode): sbt.Def.SettingsDefinition =
     if (mode == NonBootstrapped) nonBootstrapedDottyCompilerSettings else bootstrapedDottyCompilerSettings
 
-  lazy val `scala3-compiler` = project.in(file("compiler")).asDottyCompiler(NonBootstrapped)
+  lazy val `scala3-compiler` = project.in(file("compiler")).asDottyCompilerForked(NonBootstrapped)
 
   lazy val Scala3CompilerCoursierTest = config("scala3CompilerCoursierTest") extend Test
   lazy val `scala3-compiler-bootstrapped` = project.in(file("compiler")).asDottyCompiler(Bootstrapped)
@@ -1661,6 +1661,17 @@ object Build {
       dependsOn(`scala3-interfaces`).
       dependsOn(dottyLibrary).
       dependsOn(tastyCore).
+      settings(dottyCompilerSettings)
+
+    // only for my fork - just like `asDottyCompiler`, but depend on the official stdlib, because it doesn't differ in my fork, and I don't want to depend on two scala versions which are identical...
+    def asDottyCompilerForked(implicit mode: Mode): Project = project.withCommonSettings.
+      settings(
+        libraryDependencies ++= Seq(
+          "org.scala-lang" % "scala3-interfaces" % baseVersion,
+          "org.scala-lang" %% "scala3-library" % baseVersion,
+          "org.scala-lang" %% "tasty-core" % baseVersion,
+        )
+      ).
       settings(dottyCompilerSettings)
 
     def asDottyLibrary(implicit mode: Mode): Project = {
