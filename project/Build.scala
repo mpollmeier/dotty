@@ -82,7 +82,7 @@ object Build {
 
   val referenceVersion = "3.2.1"
 
-  val baseVersion = "3.2.2-RC1"
+  val baseVersion = "3.2.2-RC1-bin-20221101-d84007c-NIGHTLY"
 
   // Versions used by the vscode extension to create a new project
   // This should be the latest published releases.
@@ -810,7 +810,7 @@ object Build {
   lazy val `scala3-compiler` = project.in(file("compiler")).asDottyCompiler(NonBootstrapped)
 
   lazy val Scala3CompilerCoursierTest = config("scala3CompilerCoursierTest") extend Test
-  lazy val `scala3-compiler-bootstrapped` = project.in(file("compiler")).asDottyCompiler(Bootstrapped)
+  lazy val `scala3-compiler-bootstrapped` = project.in(file("compiler")).asDottyCompilerForked(Bootstrapped)
     .configs(Scala3CompilerCoursierTest)
     .settings(
       inConfig(Scala3CompilerCoursierTest)(Defaults.testSettings),
@@ -1778,6 +1778,19 @@ object Build {
       dependsOn(`scala3-interfaces`).
       dependsOn(dottyLibrary).
       dependsOn(tastyCore).
+      settings(dottyCompilerSettings)
+
+    // only for my fork - just like `asDottyCompiler`, but depend on the official stdlib, because it doesn't differ in my fork, and I don't want to depend on two scala versions which are identical...
+    def asDottyCompilerForked(implicit mode: Mode): Project = project.withCommonSettings.
+      settings(
+        version := baseVersion + "+1-extensible-repl",
+        organization := "com.michaelpollmeier",
+        libraryDependencies ++= Seq(
+          "org.scala-lang" % "scala3-interfaces" % baseVersion,
+          "org.scala-lang" %% "scala3-library" % baseVersion,
+          "org.scala-lang" %% "tasty-core" % baseVersion,
+        )
+      ).
       settings(dottyCompilerSettings)
 
     def asDottyLibrary(implicit mode: Mode): Project = {
