@@ -1666,6 +1666,7 @@ object Build {
     // only for my fork - just like `asDottyCompiler`, but depend on the official stdlib, because it doesn't differ in my fork, and I don't want to depend on two scala versions which are identical...
     def asDottyCompilerForked(implicit mode: Mode): Project = project.withCommonSettings.
       settings(
+        organization := "com.michaelpollmeier",
         libraryDependencies ++= Seq(
           "org.scala-lang" % "scala3-interfaces" % baseVersion,
           "org.scala-lang" %% "scala3-library" % baseVersion,
