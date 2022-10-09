@@ -177,6 +177,11 @@ class ReplDriver(settings: Array[String],
     interpret(parsed)
   }
 
+  final def runQuietly(input: String)(using State): State = runBody {
+    val parsed = ParseResult(input)
+    interpret(parsed, quiet = true)
+  }
+
   private def runBody(body: => State): State = rendering.classLoader()(using rootCtx).asContext(withRedirectedOutput(body))
 
   // TODO: i5069
@@ -243,10 +248,10 @@ class ReplDriver(settings: Array[String],
         .getOrElse(Nil)
   end completions
 
-  private def interpret(res: ParseResult)(implicit state: State): State = {
+  private def interpret(res: ParseResult, quiet: Boolean = false)(implicit state: State): State = {
     res match {
       case parsed: Parsed if parsed.trees.nonEmpty =>
-        compile(parsed, state)
+        compile(parsed, state, quiet)
 
       case SyntaxErrors(_, errs, _) =>
         displayErrors(errs)
@@ -264,7 +269,7 @@ class ReplDriver(settings: Array[String],
   }
 
   /** Compile `parsed` trees and evolve `state` in accordance */
-  private def compile(parsed: Parsed, istate: State): State = {
+  private def compile(parsed: Parsed, istate: State, quiet: Boolean = false): State = {
     def extractNewestWrapper(tree: untpd.Tree): Name = tree match {
       case PackageDef(_, (obj: untpd.ModuleDef) :: Nil) => obj.name.moduleClassName
       case _ => nme.NO_NAME
@@ -315,9 +320,11 @@ class ReplDriver(settings: Array[String],
               implicit val diagnosticOrdering: Ordering[Diagnostic] =
                 Ordering[(Int, Int, Int)].on(d => (d.pos.line, -d.level, d.pos.column))
 
-              (definitions ++ warnings)
-                .sorted
-                .foreach(printDiagnostic)
+              if (!quiet) {
+                (definitions ++ warnings)
+                  .sorted
+                  .foreach(printDiagnostic)
+              }
 
               updatedState
             }
