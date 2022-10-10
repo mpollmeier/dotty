@@ -115,7 +115,7 @@ class ReplDriver(settings: Array[String],
     rendering = new Rendering(classLoader)
   }
 
-  private var rootCtx: Context = _
+  protected var rootCtx: Context = _
   private var shouldStart: Boolean = _
   private var compiler: ReplCompiler = _
   protected var rendering: Rendering = _
