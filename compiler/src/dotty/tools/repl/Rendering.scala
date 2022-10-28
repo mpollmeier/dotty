@@ -27,7 +27,8 @@ private[repl] class Rendering(parentClassLoader: Option[ClassLoader] = None) {
 
   import Rendering._
 
-  private val MaxStringElements: Int = 1000  // no need to mkString billions of elements
+  // note: increased manually for this fork, latest upstream has proper settings for this...
+  private val MaxStringElements: Int = 100000  // no need to mkString billions of elements
 
   var myClassLoader: AbstractFileClassLoader = _
 
