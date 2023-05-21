@@ -71,7 +71,7 @@ object SyntaxHighlighting {
           case STRINGPART =>
             // String interpolation parts include `$` but
             // we don't highlight it, hence the `-1`
-            highlightRange(start, end - 1, LiteralColor)
+            highlightRange(start, end - 1, StringColor)
 
           case _ if alphaKeywords.contains(token) || isSoftModifier =>
             highlightRange(start, end, KeywordColor)

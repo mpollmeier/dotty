@@ -923,8 +923,11 @@ object Scanners {
                   strVal = ""
                 }
               }
-              else
-                getStringLit()
+              else {
+                if (sys.env.get("DOTTY_DEBUG").isDefined) {
+                  stringPart(multiLine = false)
+                } else getStringLit()
+              }
             }
           fetchDoubleQuote()
         case '\'' =>
